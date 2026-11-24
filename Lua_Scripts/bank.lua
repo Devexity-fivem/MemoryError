@@ -1,3 +1,3 @@
--- "Bank Toolbox" merged into devexitylib as DX.Bank.
--- Kept as a shim so existing `require("bank")` callers keep working.
-return require("devexitylib").Bank
+-- Bank Toolbox lives in devexitylib/ as DX.Bank; this shim keeps
+-- require("bank") working for existing scripts.
+return require("devexitylib.bank")

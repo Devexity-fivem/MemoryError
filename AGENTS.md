@@ -3,8 +3,8 @@
 ## Project
 
 - RS3 only. `Lua_Scripts/apiosrs.lua` exists but is intentionally unused — never depend on it.
-- `Lua_Scripts/devexitylib.lua` (`local DX = require("devexitylib")`) is the unified helper library. Prefer it over `utils.lua`/`ClueUtils.lua`/`lodestones.lua` (legacy, superseded).
-- `Lua_Scripts/bank.lua` is merged into devexitylib as `DX.Bank` (Bank Toolbox by Spectre011 — same `BANK:`/`DX.Bank:` method API, e.g. `DX.Bank:IsOpen()`, `DX.Bank:Withdraw(id)`). `bank.lua` is now a shim returning `require("devexitylib").Bank`, so existing `require("bank")` callers keep working and share the same table.
+- `Lua_Scripts/devexitylib/` is the unified helper library (`local DX = require("devexitylib")`): `devexitylib.lua` (DX.* namespaces) + `bank.lua` (DX.Bank / Bank Toolbox by Spectre011) + README. Root `Lua_Scripts/devexitylib.lua` and `Lua_Scripts/bank.lua` are forwarding shims (`require("devexitylib.devexitylib")` / `require("devexitylib.bank")`) so existing requires keep working. Prefer DX over `utils.lua`/`ClueUtils.lua`/`lodestones.lua` (legacy, superseded).
+- Bank Toolbox is merged into devexitylib as `DX.Bank` — same `BANK:`/`DX.Bank:` method API (`DX.Bank:IsOpen()`, `DX.Bank:Withdraw(id)`). Most collection-box methods keep the upstream `Colletion` typo for compatibility.
 - `api.lua` is bot-provided and may be overwritten by client updates — annotation fixes there may need re-applying.
 
 ## BotMCP (live game access)
