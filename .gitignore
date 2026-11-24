@@ -15,6 +15,13 @@ PluginDumps/
 Plugins/
 *.log
 
+# Editor backups & runtime-generated per-character settings
+*.bak
+*.config.json
+
+# Client scaffolding placeholder
+Lua_Scripts/Place scripts here.txt
+
 # Local agent config
 .devin/
 

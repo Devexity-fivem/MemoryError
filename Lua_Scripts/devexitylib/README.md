@@ -1,6 +1,6 @@
 # devexitylib
 
-Unified RuneScape 3 helper library for MemoryError bot scripts — everything lives under the `DX` namespace. Version 1.1.0.
+Unified RuneScape 3 helper library for MemoryError bot scripts — everything lives under the `DX` namespace. Version 1.2.0.
 
 Requires the bot-provided `api` module (`require("api")`) and client globals (`FFPOINT`, `Interact`, `Inventory`, ...). No API calls are made at load time, so it is safe to require at the top of any script.
 
@@ -46,12 +46,12 @@ local BANK = require("devexitylib.bank")
 | `DX.Session` | `DX.Session.new(skills)` → `elapsed`, `fmtElapsed`, `xpGained`, `xpTotal`, `xpHr`, `etaLevel`, `counter`, `bump`, `count`, `rate` |
 | `DX.GUI` | House purple theme + widgets: `colors`, `buttons`, `sectionHeader`, `bigButton`, `statRow`, `progressBar`, `checkbox`, `sliderInt`, `tooltip` |
 | `DX.Config` | Per-character JSON settings: `path`, `save`, `load`, `loadInto` (`<tag>-<player>.config.json` next to the script) |
-| `DX.PlayerManager` | One-instance survival/buff manager. `pm = DX.PlayerManager.new(config)`, then per loop: `pm:update()`, `pm:manageHealth()`, `pm:managePrayer()`, `pm:manageBuffs(buffDefs)` |
+| `DX.PlayerManager` | One-instance survival/buff manager. `pm = DX.PlayerManager.new(config)`, then per loop: `pm:update()`, `pm:manageHealth()`, `pm:managePrayer()`, `pm:manageBuffs(buffDefs)`. Ported from Sonson's [player_manager.lua](https://github.com/sonsonmagro/Sonsons-Player-Manager) v1.2.4 (+ our status-dispatch extension, which upstream removed) |
 | `DX.Bank` | Bank Toolbox (below) |
-| `DX.Herblore` | Potion recipe DB + `GetCraftingPlan(targetId)` (merged from potionrecipes.lua; `require("potionrecipes")` still works) |
-| `DX.Quest` | Spectre's quest.lua vendored: `DialogBoxOpen`, `OptionSelector`, `WaitForDialogBox`, `PressSpace`, `HasOption`, `IsInCutscene`, `MoveTo`, `IsPlayerInArea` |
-| `DX.Spectre` | Spectre's spectre.lua vendored: `GetBuffs/Debuffs`, `CheckNPCMessagesRecent`, `CheckIncenseStick`, `RechargeSilverhawkBoots`, `MemStrandTele`, `SurgeIfFacing`, `Dive`, `GetGWD2KillCounts` |
-| `DX.Slib` | Spectre's slib.lua v1.0.17 vendored whole: logging (`Info/Warn/Error` + opt-in file log), param validation, `SleepUntil`/`WorkSleepUntil`, print-dump tools, VB helpers, instance/dungeon tools, GWD kc, loot-window, runes, abilities, `FindObj`, `MoveTo`, alch/note, `BuffUpKeep` |
+| `DX.Herblore` | Potion recipe DB + `GetCraftingPlan(targetId)` (merged from our potionrecipes.lua; `require("potionrecipes")` still works) |
+| `DX.Quest` | [Spectre011's quest.lua](https://github.com/spectre011-code/Public-ME-Scripts/blob/main/Libraries/quest.lua) v1.1.0 vendored: `DialogBoxOpen`, `OptionSelector`, `WaitForDialogBox`, `PressSpace`, `HasOption`, `IsInCutscene`, `MoveTo`, `IsPlayerInArea` |
+| `DX.Spectre` | [Spectre011's spectre.lua](https://github.com/spectre011-code/Public-ME-Scripts/blob/main/Libraries/spectre.lua) v1.0 vendored: `GetBuffs/Debuffs`, `CheckNPCMessagesRecent`, `CheckIncenseStick`, `RechargeSilverhawkBoots`, `MemStrandTele`, `SurgeIfFacing`, `Dive`, `GetGWD2KillCounts` |
+| `DX.Slib` | [Spectre011's slib.lua](https://github.com/spectre011-code/Public-ME-Scripts/blob/main/Libraries/slib.lua) v1.0.17 vendored whole: logging (`Info/Warn/Error` + opt-in file log), param validation, `SleepUntil`/`WorkSleepUntil`, print-dump tools, VB helpers, instance/dungeon tools, GWD kc, loot-window, runes, abilities, `FindObj`, `MoveTo`, alch/note, `BuffUpKeep` |
 
 ## run() — main-loop boilerplate
 
@@ -77,7 +77,7 @@ Old library names still work — each old file returns the matching DX table:
 
 ## DX.Bank — Bank Toolbox
 
-Merged from bank.lua ("Bank Toolbox" v1.2.1 by Spectre011). Same `BANK:`-style API:
+Merged from Spectre011's [bank.lua](https://github.com/spectre011-code/Public-ME-Scripts/blob/main/Libraries/bank.lua) ("Bank Toolbox" **v1.2.0**), plus local fixes for two upstream bugs (`DepositBoxContains` casing, `ColletionBoxCollectTo*` calling the undefined `HasItemsToCollect`). Same `BANK:`-style API:
 
 ```lua
 local DX = require("devexitylib")
@@ -119,6 +119,20 @@ pm:manageBuffs({ { buffName = "Rigour", buffId = 2448, execute = function() retu
 ```
 
 See `DX.PlayerManager` section in `devexitylib.lua` for the full config shape (statuses, locations, buff defs with `toggle`/`refreshAt`/`untoggleBelow`).
+
+## Credits
+
+Vendored components — original authors, repos and versions:
+
+| Section | Source | Upstream version |
+|---|---|---|
+| `DX.Bank` | [Spectre011](https://github.com/spectre011-code) — Bank Toolbox ([Public-ME-Scripts](https://github.com/spectre011-code/Public-ME-Scripts), MIT license, Discord `not_spectre011`) | v1.2.0 + our fixes |
+| `DX.Quest` | Spectre011 — quest.lua (same repo) | v1.1.0 |
+| `DX.Spectre` | Spectre011 — spectre.lua (same repo) | v1.0 |
+| `DX.Slib` | Spectre011 — slib.lua (same repo) | v1.0.17 |
+| `DX.PlayerManager` | [Sonson](https://github.com/sonsonmagro) — [Sonsons-Player-Manager](https://github.com/sonsonmagro/Sonsons-Player-Manager) | v1.2.4 |
+
+All other `DX.*` modules are original Devexity work. Vendored sections stay as close to upstream as possible; every local change is noted at the section header in `devexitylib.lua` so upstream diffs stay easy to audit (`sed -n '<section lines>'` + diff against the repo file).
 
 ## Version
 

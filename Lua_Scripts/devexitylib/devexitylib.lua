@@ -4,6 +4,22 @@
 # Autor:        <Devexity>
 # Version:      <1.2.0>
 # Datum:        <2026.11.23>
+
+CREDITS — code in this file from other authors (see each SECTION header):
+
+  * DX.Bank        - "Bank Toolbox" v1.2.0 by Spectre011 (+ local bugfixes)
+  * DX.Quest       - quest.lua v1.1.0 by Spectre011
+  * DX.Spectre     - spectre.lua v1.0 by Spectre011
+  * DX.Slib        - slib.lua v1.0.17 by Spectre011
+                     github.com/spectre011-code/Public-ME-Scripts (MIT license)
+                     Discord: not_spectre011
+  * DX.PlayerManager - player_manager.lua v1.2.4 by Sonson
+                     github.com/sonsonmagro/Sonsons-Player-Manager
+                     (re-adds status dispatch upstream removed; see section header)
+
+Everything else in this file is original Devexity work. Vendored sections are
+kept as close to upstream as possible; our modifications are noted at each
+section header so fixes stay easy to re-apply on upstream updates.
 --]]
 
 local API = require("api")
@@ -3483,10 +3499,15 @@ DX.Lodestone.YANILLE = buildLodestone(25, FFPOINT.new(2529, 3095, 0))
 
 ----------------------------------------------------------------------------------------------------
 --# SECTION: DX.PlayerManager — player state, survival and buff management
--- Ported from sonsonmagro/Sonsons-Player-Manager v1.2.4; adapted to this client's API shapes
--- and conventions. Fixes upstream bugs: wrong inv_Container field names, dead critical-prayer
--- check, inverted teleport cooldown, triple GetABs_names read, global `debug` leak,
--- PlayerRegion().z used as plane (it is RegionId), missing status dispatch.
+--#   Ported from Sonson's player_manager.lua v1.2.4
+--#   https://github.com/sonsonmagro/Sonsons-Player-Manager
+--#   Adapted to this client's API shapes and conventions. Fixes upstream bugs:
+--#   wrong inv_Container field names, dead critical-prayer check, inverted
+--#   teleport cooldown, triple GetABs_names read, global `debug` leak,
+--#   PlayerRegion().z used as plane (it is RegionId), missing status dispatch.
+--#   Devexity extensions on top of upstream: `statuses` config + manageStatuses()
+--#   re-added (upstream dropped status dispatch in v1.2.0), `detector`-only
+--#   locations table optional.
 ----------------------------------------------------------------------------------------------------
 DX.PlayerManager = {}
 DX.PlayerManager.__index = DX.PlayerManager
@@ -4106,7 +4127,18 @@ function DX.PlayerManager:update()
     self:manageStatuses()
 end
 
--- Bank toolbox (merged from bank.lua: "Bank Toolbox" v1.2.1 by Spectre011)
+--# SECTION: DX.Bank — "Bank Toolbox" v1.2.0 by Spectre011, vendored + local fixes
+--#   https://github.com/spectre011-code/Public-ME-Scripts/blob/main/Libraries/bank.lua
+--#   Upstream bugs fixed here (not in upstream v1.2.0):
+--#     - DepositBoxContains: body used `itemID`, param is `ItemID` (always false)
+--#     - ColletionBoxCollectToInventory/ToBank called HasItemsToCollect(), which
+--#       does not exist upstream -> now call ColletionBoxHasItems()
+--#   (upstream changelog below is kept verbatim for provenance)
+local ScriptName = "Bank Toolbox"
+local Author = "Spectre011"
+local ScriptVersion = "1.2.0"
+local ReleaseDate = "02-05-2025"
+local DiscordHandle = "not_spectre011"
 --[[
 Changelog:
 v1.0.0 - 02-05-2025
@@ -7416,6 +7448,7 @@ end
 
 ----------------------------------------------------------------------------------------------------
 --# SECTION: DX.Quest — Spectre011 quest.lua v1.1.0 (dialog/movement helpers), vendored
+--#   https://github.com/spectre011-code/Public-ME-Scripts/blob/main/Libraries/quest.lua
 local ScriptName = "Quest toolbox"
 local Author = "Spectre011"
 local ScriptVersion = "1.1.0"
@@ -7606,6 +7639,9 @@ DX.Quest = QUEST
 ----------------------------------------------------------------------------------------------------
 --# SECTION: DX.Spectre — Spectre011 spectre.lua v1.0 (misc helpers incl. GWD2 kc,
 --#   incense sticks, silverhawk recharge, mem-strand tele, SurgeIfFacing, Dive)
+--#   https://github.com/spectre011-code/Public-ME-Scripts/blob/main/Libraries/spectre.lua
+--#   (upstream's global Author/DiscordHandle/VERSION made `local` here — same fix
+--#    upstream itself applied in bank v1.0.4 to avoid global name clashes)
 local Author = "Spectre011"
 local DiscordHandle = "not_spectre011"
 
@@ -8185,6 +8221,10 @@ DX.Spectre = SpectreUtils
 --# SECTION: DX.Slib — Spectre011 slib.lua v1.0.17 (full utility library: logging,
 --#   param validation, waits, print-dump tools, VB helpers, instance/dungeon tools,
 --#   GWD kc, loot window, runes, abilities, movement, alch/note, buff upkeep)
+--#   https://github.com/spectre011-code/Public-ME-Scripts/blob/main/Libraries/slib.lua
+--#   One local change: Slib.ChatMessages starts empty — upstream fills it at require
+--#   time via API.GatherEvents_chat_check(), which destructively drains the shared
+--#   chat buffer; it is filled lazily by Slib:RecentMessageCheck instead.
 --asslib
 local ScriptName = "Spectre011's Lua Utility Library" 
 local Author = "Spectre011"
