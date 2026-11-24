@@ -44,7 +44,7 @@ MemoryError exposes a JSON-RPC MCP server — use it to verify API assumptions a
 - Lodestone ids = interface 1092 component ids (verified live 2026-12 via `InterfaceReadOnDemand{id:1092}`): contiguous 8-33, then Prifddinas = 34, City of Um = 35, Wendlewick = 41; ids 36-40 do not exist in the interface.
 - UI style: match `skilling/NecromancyRituals/NecroRitualsGUI.lua` — purple palette `dark{0.08,0.05,0.12}` / `medium{0.15,0.08,0.20}` / `light{0.25,0.12,0.35}` / `bright{0.45,0.20,0.55}` / `glow{0.65,0.30,0.80}`, green accent `{0.30,0.70,0.40}`; per-character JSON config files (`<script>-<player>.config.json`) via `API.JsonEncode`/`JsonDecode`. Used by `skilling/DevexityThievingAIO.lua` and `bossing/ClueAIOGWD1.lua`.
 - Test scripts (Lupa-based smoke tests): `C:\Users\pablo\dx_test\`.
-- Git repo: `github.com/Devexity-fivem/MemoryError`, branch `main`. `.gitignore` covers `*.bak`, runtime-generated `*.config.json`, binaries, logs, and client placeholders — commit script source only.
+- Git repo: `github.com/Devexity-fivem/MemoryError`, branch `main` — **only devexitylib is published** (the lib, its shims, `.gitignore`, `.luarc.json`, `AGENTS.md`). Do NOT commit the script dirs (`skilling/`, `bossing/`, `afk/`, `clues/`, `posd/`, `minigames/`, etc.) — they're private/untracked on purpose. `.gitignore` also covers `*.bak`, runtime-generated `*.config.json`, binaries, logs, and client placeholders.
 
 ## Known-stale/unreliable client reads (verified 2026-11)
 
