@@ -35,9 +35,45 @@ local BANK = require("devexitylib.bank")
 | `DX.Summoning` | `familiarMinutesLeft`, `renewAtWarRetreat` |
 | `DX.WarRetreat` | `isAt`, `teleport`, `prepare` |
 | `DX.Skilling` | `oreBoxCount`, `runeCount`, `noteItem` |
-| `DX.Lodestone` | `teleport(lode)`, `isAt(lode)` plus prebuilt lodestones: `DX.Lodestone.FALADOR`, `.LUMBRIDGE`, `.TIRANNWN`, `.ASHDALE`, ... |
+| `DX.Lodestone` | `teleport(lode)`, `isAt(lode)` plus prebuilt lodestones: `DX.Lodestone.FALADOR`, `.LUMBRIDGE`, `.WENDLEWICK`, `.UM`, ... |
+| `DX.Act` | Verified menu-option `{action, route}` pairs: `OBJ_OP1..OBJ_EX`, `NPC_TALK/NPC_OP2/NPC_OP3/NPC_A7/NPC_ATTACK`, `TAKE`, `TAKE_IDX`, `BOX_TRAP` |
+| `DX.Vars` | `get`, `state`, `stateInOrder`, `isSet`, `isSetInOrder` + `DX.Vars.ID` named varbits (interface state, queued ability, aura, adrenaline, spellbook) |
+| `DX.Objects` | `find`, `first`, `present`, `firstNear`, `interact`, `interactNear`, `direct` — scenery/decor search + actions |
+| `DX.NPC` | `find`, `first`, `present`, `count`, `firstByName`, `interact`, `interactName`, `talk`, `attack`, `interactInArea`, `direct` |
+| `DX.Ground` | `find`, `first`, `present`, `take`, `takeDirect`, `loot` (area loot: ids + name/action filters + LootOptions) |
+| `DX.Walk` | `to`, `click`, `navigate` (StarPath long-range), `canReach`, `toLocation`, `distTo`, `isMoving`, `waitArrived`, `waitSettled`, `toAndWait` |
+| `DX.Dialog` | `isOpen`, `continue`, `space`, `key`, `option`, `optionIndex`, `waitOpen`, `waitAndContinue`, `waitAndKey`, `said`, `readNpc`, `readPlayer` |
+| `DX.Session` | `DX.Session.new(skills)` → `elapsed`, `fmtElapsed`, `xpGained`, `xpTotal`, `xpHr`, `etaLevel`, `counter`, `bump`, `count`, `rate` |
+| `DX.GUI` | House purple theme + widgets: `colors`, `buttons`, `sectionHeader`, `bigButton`, `statRow`, `progressBar`, `checkbox`, `sliderInt`, `tooltip` |
+| `DX.Config` | Per-character JSON settings: `path`, `save`, `load`, `loadInto` (`<tag>-<player>.config.json` next to the script) |
 | `DX.PlayerManager` | One-instance survival/buff manager. `pm = DX.PlayerManager.new(config)`, then per loop: `pm:update()`, `pm:manageHealth()`, `pm:managePrayer()`, `pm:manageBuffs(buffDefs)` |
 | `DX.Bank` | Bank Toolbox (below) |
+| `DX.Herblore` | Potion recipe DB + `GetCraftingPlan(targetId)` (merged from potionrecipes.lua; `require("potionrecipes")` still works) |
+| `DX.Quest` | Spectre's quest.lua vendored: `DialogBoxOpen`, `OptionSelector`, `WaitForDialogBox`, `PressSpace`, `HasOption`, `IsInCutscene`, `MoveTo`, `IsPlayerInArea` |
+| `DX.Spectre` | Spectre's spectre.lua vendored: `GetBuffs/Debuffs`, `CheckNPCMessagesRecent`, `CheckIncenseStick`, `RechargeSilverhawkBoots`, `MemStrandTele`, `SurgeIfFacing`, `Dive`, `GetGWD2KillCounts` |
+| `DX.Slib` | Spectre's slib.lua v1.0.17 vendored whole: logging (`Info/Warn/Error` + opt-in file log), param validation, `SleepUntil`/`WorkSleepUntil`, print-dump tools, VB helpers, instance/dungeon tools, GWD kc, loot-window, runes, abilities, `FindObj`, `MoveTo`, alch/note, `BuffUpKeep` |
+
+## run() — main-loop boilerplate
+
+```lua
+DX.run(function()
+    -- one loop step here
+end, { consoleFile = "my_debug.txt", onExit = function() print("bye") end })
+```
+
+## Compatibility shims
+
+Old library names still work — each old file returns the matching DX table:
+
+| require | resolves to |
+|---|---|
+| `require("utils")` | DX-backed `UTILS` instance (full old API mapped) |
+| `require("lodestones")` | `DX.Lodestone` (+ `Teleport`/`IsAtLocation` aliases) |
+| `require("bank")` | `DX.Bank` |
+| `require("slib")` | `DX.Slib` |
+| `require("potionrecipes")` | `DX.Herblore` |
+| `require("quest")` | `DX.Quest` |
+| `require("spectre")` | `DX.Spectre` |
 
 ## DX.Bank — Bank Toolbox
 
@@ -86,4 +122,4 @@ See `DX.PlayerManager` section in `devexitylib.lua` for the full config shape (s
 
 ## Version
 
-`DX.VERSION` — currently `1.1.0`.
+`DX.VERSION` — currently `1.2.0`.
