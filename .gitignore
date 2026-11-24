@@ -1,0 +1,22 @@
+# Binaries / injectors
+*.exe
+*.dll
+
+# Account & client config (credentials / machine-specific)
+accounts*
+settings.json
+MMISettings.json
+custom_launch.json
+
+# Runtime output
+Logs/
+Drops/
+PluginDumps/
+Plugins/
+*.log
+
+# Local agent config
+.devin/
+
+# Junk
+nul

@@ -1,0 +1,30 @@
+{
+    "runtime.version": "Lua 5.4",
+    "diagnostics.globals": [
+        "FFPOINT",
+        "WPOINT",
+        "ImGuiWindowFlags",
+        "ImGuiInputTextFlags",
+        "ImGuiTreeNodeFlags",
+        "ImGuiSelectableFlags",
+        "ImGuiComboFlags",
+        "ImGuiTabBarFlags",
+        "ImGuiTabItemFlags",
+        "ImGuiTableFlags",
+        "ImGuiTableColumnFlags",
+        "ImGuiColorEditFlags",
+        "ImGuiSliderFlags",
+        "ImGuiPopupFlags",
+        "ImGuiChildFlags",
+        "ImGuiCol",
+        "ImGuiStyleVar",
+        "ImGuiDir",
+        "ImGuiCond",
+        "ImGuiMouseButton",
+        "Inventory",
+        "Bank",
+        "Equipment",
+        "Interact",
+        "Familiars"
+    ]
+}
