@@ -25,7 +25,7 @@ section header so fixes stay easy to re-apply on upstream updates.
 local API = require("api")
 local DX = {}
 
-DX.VERSION = "1.2.0"
+DX.VERSION = "1.3.0"
 DX.API = API
 
 math.randomseed(os.time())
@@ -1131,12 +1131,23 @@ function DX.Util.labelOf(value, tbl)
     return nil
 end
 
----@param ud userdata
+---@param ud userdata|table sol::vector userdata or a plain table
 ---@return table
 function DX.Util.userdataToTable(ud)
+    if type(ud) == "table" then return ud end
+    if type(ud) ~= "userdata" then return {} end
+    local ok, n = pcall(function() return #ud end)
+    if not ok or type(n) ~= "number" or n <= 0 then return {} end
     local vector = {}
-    for i = 1, #ud do
-        vector[i] = ud[i]
+    for i = 1, n do
+        local okv, v = pcall(function() return ud[i] end)
+        if okv and v ~= nil then vector[#vector + 1] = v end
+    end
+    if #vector == 0 then
+        for i = 0, n - 1 do
+            local okv, v = pcall(function() return ud[i] end)
+            if okv and v ~= nil then vector[#vector + 1] = v end
+        end
     end
     return vector
 end
@@ -1208,14 +1219,17 @@ end
 
 ---@return boolean
 function DX.Game.stateChecks()
-    if API.GetGameState2() ~= 3 and stateFailCount > 5 then
-        print('not logged in after 100 checks')
+    local state = API.GetGameState2()
+    if state ~= 3 and stateFailCount > 5 then
+        print('not logged in after multiple checks')
         API.Write_LoopyLoop(false)
         return false
-    elseif API.GetGameState2() ~= 3 then
+    elseif state ~= 3 then
         DX.Wait.forCondition(function() return API.GetGameState2() == 3 end, 5, 'state change to 3', { stateChecks = false })
         print('not logged in ' .. tostring(stateFailCount))
         stateFailCount = stateFailCount + 1
+    else
+        stateFailCount = 0
     end
     if not API.Read_LoopyLoop() then
         print('LoopyLoop is false')
@@ -1243,7 +1257,8 @@ end
 
 ---@return boolean
 function DX.Game.handleRandomEvents()
-    local F_obj = API.GetAllObjArrayInteract({ 19884, 26022, 27228, 27297, 28411, 30599, 15451 }, 20, { 1 })
+    local ok, arr = pcall(API.GetAllObjArrayInteract, { 19884, 26022, 27228, 27297, 28411, 30599, 15451 }, 20, { 1 })
+    local F_obj = ok and stateToTable(arr) or nil
     if F_obj ~= nil and #F_obj > 0 then
         print("Random event object detected: trying to click")
         DX.Wait.randomSleep(1000)
@@ -1267,15 +1282,7 @@ DX.Wait = {}
 ---@param jitterMin number|nil
 ---@param jitterMax number|nil
 function DX.Wait.sleep(ms, jitterMin, jitterMax)
-    jitterMin = jitterMin or 0
-    jitterMax = jitterMax or 0
-    local randomDelay = math.random(jitterMin, jitterMax)
-    local totalDelay = ms + randomDelay
-    local start = os.clock()
-    local target = start + (totalDelay / 1000)
-    while os.clock() < target do
-        API.RandomSleep2(50, 0, 0)
-    end
+    API.RandomSleep2(ms + math.random(jitterMin or 0, jitterMax or 0), 0, 0)
 end
 
 ---@param ms number
@@ -1442,7 +1449,8 @@ end
 ---@param types table|nil object types, default {0,1,12}
 ---@return boolean true if any listed entity is within range
 function DX.State.objectsPresent(ids, maxdist, types)
-    local ok, arr = pcall(API.GetAllObjArrayInteract, ids, maxdist or 25, types or { 0, 1, 12 })
+    -- GetAllObjArray1: presence must not filter on Action text (ground items have none).
+    local ok, arr = pcall(API.GetAllObjArray1, ids, maxdist or 25, types or { 0, 1, 12 })
     if not ok or arr == nil then return false end
     arr = stateToTable(arr)
     return type(arr) == "table" and next(arr) ~= nil
@@ -1612,7 +1620,10 @@ end
 
 function DX.Interface.lootAll()
     DX.Interface.openLootWindow()
-    if API.LootWindowOpen_2() and (API.LootWindow_GetData()[1].itemid1 > 0) then
+    if not API.LootWindowOpen_2() then return end
+    local data = stateToTable(API.LootWindow_GetData())
+    local first = data and (data[1] or data[0])
+    if first and (first.itemid1 or 0) > 0 then
         API.DoAction_LootAll_Button()
     end
 end
@@ -1953,36 +1964,19 @@ end
 ---@param buffId number
 function DX.Prayer.activate(abilityId, buffId)
     if API.Buffbar_GetIDstatus(buffId, false).found then
-        return
+        return true
     end
-    DX.Ability.use(abilityId)
+    return DX.Ability.use(abilityId)
 end
 
 ---@param abilityId number
 ---@param buffId number
+---@return boolean
 function DX.Prayer.deactivate(abilityId, buffId)
     if not API.Buffbar_GetIDstatus(buffId, false).found then
-        return
+        return true
     end
-    DX.Ability.use(abilityId)
-end
-
-local prayerFlickChecks = {
-    [26040] = function() return DX.Prayer.isDeflectMelee() end,
-    [26041] = function() return DX.Prayer.isDeflectMagic() end,
-    [26044] = function() return DX.Prayer.isDeflectRanged() end,
-    [26033] = function() return DX.Prayer.isSoulSplit() end,
-}
-
----@param abilityId number
-function DX.Prayer.flick(abilityId)
-    local check = prayerFlickChecks[abilityId]
-    if check == nil then
-        return
-    end
-    if not check() then
-        return DX.Ability.use(abilityId)
-    end
+    return DX.Ability.use(abilityId)
 end
 
 local lastRestoreSip = 0
@@ -2847,7 +2841,9 @@ DX.Ground.TYPES = { 3 }
 ---@param maxdist number|nil search radius (default 25)
 ---@return AllObject[] nearest-first
 function DX.Ground.find(ids, maxdist)
-    local ok, arr = pcall(API.GetAllObjArrayInteract, idList(ids), maxdist or 25, DX.Ground.TYPES)
+    -- GetAllObjArray1, not Interact: ground items carry no Action text and the
+    -- interact-filtered call drops them silently.
+    local ok, arr = pcall(API.GetAllObjArray1, idList(ids), maxdist or 25, DX.Ground.TYPES)
     if not ok then return {} end
     return stateToTable(arr) or {}
 end
@@ -2968,6 +2964,7 @@ function DX.Walk.waitArrived(tile, tol, timeoutSec)
     tol = tol or 3
     return DX.Wait.forCondition(function()
         local p = API.PlayerCoord()
+        if tile.z ~= nil and p.z ~= tile.z then return false end
         return math.abs(p.x - tile.x) <= tol and math.abs(p.y - tile.y) <= tol
     end, timeoutSec or 15, "arrive at tile", { randomEvents = false, stateChecks = false })
 end
@@ -3394,6 +3391,8 @@ function DX.run(stepFn, opts)
         if not ok then
             API.logError("[DX.run] " .. tostring(err))
             DX.Wait.sleep(backoff, 100, 200)
+        else
+            DX.Wait.sleep(opts.loopSleepMs or 50, 0, 50)
         end
         if consoleFile and (os.time() - lastSave) >= interval then
             pcall(API.SaveConsoleToFile, consoleFile, false)
@@ -3412,6 +3411,7 @@ DX.Lodestone = {}
 
 local function lodestoneAt(lode)
     local playerLoc = API.PlayerCoord()
+    if lode.loc.z ~= nil and playerLoc.z ~= lode.loc.z then return false end
     local xDiff = math.abs(playerLoc.x - lode.loc.x)
     local yDiff = math.abs(playerLoc.y - lode.loc.y)
     return xDiff <= 20 and yDiff <= 20

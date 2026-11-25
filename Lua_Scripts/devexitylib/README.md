@@ -1,6 +1,6 @@
 # devexitylib
 
-Unified RuneScape 3 helper library for MemoryError bot scripts — everything lives under the `DX` namespace. Version 1.2.0.
+Unified RuneScape 3 helper library for MemoryError bot scripts — everything lives under the `DX` namespace. Version 1.3.0.
 
 Requires the bot-provided `api` module (`require("api")`) and client globals (`FFPOINT`, `Interact`, `Inventory`, ...). No API calls are made at load time, so it is safe to `require` at the top of any script.
 
@@ -139,7 +139,7 @@ DX.Ability.surge()                  -- movement helpers handle facing
 DX.Ability.dive(tile)
 
 DX.Prayer.activate(26033, 26033)    -- (abilityId, buffId): toggles only if buff missing
-DX.Prayer.flick(26033)              -- one-tick flick; buff checks built in for common prayers
+DX.Prayer.flick(26033, 26033)       -- toggle-on-if-inactive (abilityId, buffId)
 DX.Prayer.restore(30)               -- sip restore below 30% points
 
 DX.Consumables.eat(DX.Data.Food, 50)
@@ -313,4 +313,14 @@ Standalone developer utilities vendored under `tools/` — not part of the `DX` 
 
 ## Version
 
-`DX.VERSION` — currently `1.2.0`.
+`DX.VERSION` — currently `1.3.0`.
+
+### 1.3.0 — reliability audit
+
+- **`DX.Prayer.flick` signature is now `(abilityId, buffId)`** — the old single-arg `flick(abilityId)` was dead code shadowed by a duplicate definition. `activate`/`deactivate`/`flick` all return booleans now.
+- **`DX.Ground.find`/`first`/`present` and `DX.State.objectsPresent` switched to `GetAllObjArray1`** — the interact-filtered scan drops ground items silently (empty `action`).
+- **`DX.Util.userdataToTable` handles 0- and 1-indexed `sol::vector`** and passes plain tables through; `DX.Game.handleRandomEvents`/`DX.Interface.lootAll` converted + nil-guarded on the same vector shapes.
+- **`DX.Game.stateChecks` resets its not-logged-in counter on success** (was cumulative — six transient checks over a whole session used to kill the script).
+- **`DX.Walk.waitArrived` and lodestone arrival checks compare the z-plane** (Prifddinas/Ashdale/Um no longer false-positive "arrived" on the wrong floor).
+- **`DX.Wait.sleep` delegates to `RandomSleep2`** (was an `os.clock` re-sleep loop); **`DX.run` throttles the success path** (`opts.loopSleepMs`, default 50ms) so fast step functions don't busy-spin.
+- **`DX.Herblore` OVERLOAD_3 recipe: torstol moved to `ingredients[1]`** — the mix is `UseItemOnItem(first, second)` and only torstol-on-extreme opens the overload make-x.
