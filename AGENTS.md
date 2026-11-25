@@ -7,6 +7,7 @@
 - DX v1.2.0 modules: `DX.Act` (verified `{action,route}` pairs for DoAction_*), `DX.Vars` (varbit reads + `DX.Vars.ID` names), `DX.Objects`/`DX.NPC`/`DX.Ground` (find+interact), `DX.Walk` (`to`/`navigate` via `API.StarPathWalker`/`waitArrived`/`waitSettled`), `DX.Dialog`, `DX.Session` (xp/hr stats), `DX.GUI`+`DX.Config` (house purple theme + per-character JSON), `DX.run` (main-loop runner: stateChecks+randomEvents+error guard+console dump), `DX.Prayer.flick`, `DX.Herblore` (potionrecipes merge), vendored `DX.Quest`/`DX.Spectre`/`DX.Slib` (Spectre011 libs from github spectre011-code/Public-ME-Scripts — slib.lua is the FULL 5.8k-line lib, superset of the old local 53-line slib).
 - `DX.Slib.ChatMessages` is intentionally left empty at require time — upstream populated it via `API.GatherEvents_chat_check()` which destructively drains the shared chat buffer; it's filled lazily by `Slib:RecentMessageCheck` instead.
 - Bank Toolbox is merged into devexitylib as `DX.Bank` — same `BANK:`/`DX.Bank:` method API (`DX.Bank:IsOpen()`, `DX.Bank:Withdraw(id)`). Most collection-box methods keep the upstream `Colletion` typo for compatibility.
+- `devexitylib/tools/` — vendored Spectre011 dev utilities (unmodified, credits in headers): `bank_evaluator.lua` (bank CSV export w/ wiki prices), `interface_exporter.lua` (recursive interface dump), `vb_scanner.lua` (live ImGui varbit scanner). CSVs land in `Lua_Scripts\Exports\`.
 - `api.lua` is bot-provided and may be overwritten by client updates — annotation fixes there may need re-applying.
 
 ## BotMCP (live game access)
@@ -29,9 +30,9 @@ MemoryError exposes a JSON-RPC MCP server — use it to verify API assumptions a
 
 ## Verified data shapes (live, 2026-11-12)
 
-- `API.ReadInvArrays33()` returns **`inv_Container_struct[]`**, NOT `IInfo[]` (api.lua annotation was wrong, fixed). Fields: `item_id`, `item_name`, `item_stack`, `item_slot`, `item_noted`, `item_stackable`, `item_tradeable`, `item_bankable`, `item_alchable`, `item_highalch`, `item_gelimit`, `item_cat`, `item_interface{x,y,z}` (1473/5/slot = inv), `item_xyz`, `pmap`, `extra_mem`, `extra_ints`.
-- `API.Container_Get_all(93)` returns the same `inv_Container_struct[]` — container 93 = inventory.
-- `Inventory:GetItems()` returns `InventoryItem[]`: `id`, `name`, `amount`, `slot`, `xp` — **no noted flag**. Via MCP `Inventory.GetItems`, empty slots appear as `id = -1`, `name = ""` — filter `id <= 0`.
+- `API.ReadInvArrays33()` — the **bridge** marshals `inv_Container_struct[]` fields `item_id`, `item_name`, `item_stack`, `item_slot`, `item_noted`, etc., but the **in-client** call returns userdata whose elements do NOT expose `item_name`/`item_id` (verified live: `findClueItem` diag printed nil for both). Do NOT use it in scripts — use `Inventory:GetItems()` instead.
+- `API.Container_Get_all(93)` — same caveat; verified shape is the bridge's marshaling, in-client struct fields differ.
+- `Inventory:GetItems()` — the reliable in-script inventory read: `InventoryItem[]` `{id, name, amount, slot, xp}` — **no noted flag**. Via MCP `Inventory.GetItems`, empty slots appear as `id = -1`, `name = ""` — filter `id <= 0`.
 - `IInfo` fields (`itemid1`, `itemid1_size`, `textitem`, `id1/id2/id3`, `hov`) apply to interface scanners only: `ScanForInterfaceTest2GetAll`, `LootWindow_GetData`, `GetEquipSlot`, `FetchBankArray`.
 - `Cache.GetItem` returns `noted`, `stackable`, `value`, `ge_limit`, `high_alch`, `alchable`, `tradeable`, `category`, `params`, `worn_options`.
 

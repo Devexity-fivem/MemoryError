@@ -299,8 +299,17 @@ Vendored components — original authors, repos and versions:
 | `DX.Spectre` | Spectre011 — spectre.lua (same repo) | v1.0 |
 | `DX.Slib` | Spectre011 — slib.lua (same repo) | v1.0.17 |
 | `DX.PlayerManager` | [Sonson](https://github.com/sonsonmagro) — [Sonsons-Player-Manager](https://github.com/sonsonmagro/Sonsons-Player-Manager) | v1.2.4 |
+| `tools/` | Spectre011 — dev utilities (same repo); Interface Exporter based on [Ernie](https://github.com/Ernestohh/)'s work | Bank Evaluator v1.2.0, Interface Exporter v2.1.0, VB Scanner v1.1.0 |
 
 All other `DX.*` modules are original Devexity work. Vendored sections stay as close to upstream as possible; every local change is noted at the section header in `devexitylib.lua` so upstream diffs stay easy to audit (`sed -n '<section lines>'` + diff against the repo file).
+
+## Tools
+
+Standalone developer utilities vendored under `tools/` — not part of the `DX` namespace, run them as scripts:
+
+- **`tools/bank_evaluator.lua`** — scans the open bank and exports a CSV of every item (id, name, stack, unit value, total) to `Lua_Scripts\Exports\BankEvaluator\`. Prices come from the weirdgloop wiki API when the `Http` global is available, else the client's GE cache. Run with the bank open.
+- **`tools/interface_exporter.lua`** — recursively scans game interfaces and dumps them to CSV under `Lua_Scripts\Exports\interfaces\`. Configure the `Config` table at the top of the file (start id, depth, scan delay) before running.
+- **`tools/vb_scanner.lua`** — live ImGui varbit/varp/varc scanner with filtering and change detection. Run it, let the initial scan finish, then filter/diff in the window.
 
 ## Version
 
