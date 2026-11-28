@@ -2,7 +2,7 @@
 #Script Name:   <devexitylib.lua>
 # Description:  <Unified RS3 helper library: utilities, waits, state, interfaces, entities, walking, dialog, sessions, GUI, prayers, necromancy, lodestones, bank, herblore, vendored Spectre libs and data tables>
 # Autor:        <Devexity>
-# Version:      <1.2.0>
+# Version:      <1.3.1>
 # Datum:        <2026.11.23>
 
 CREDITS — code in this file from other authors (see each SECTION header):
@@ -25,7 +25,7 @@ section header so fixes stay easy to re-apply on upstream updates.
 local API = require("api")
 local DX = {}
 
-DX.VERSION = "1.3.0"
+DX.VERSION = "1.3.1"
 DX.API = API
 
 math.randomseed(os.time())
@@ -1201,6 +1201,8 @@ function DX.Util.perHour(n, secs)
     return math.floor((n / secs) * 3600)
 end
 
+local stateToTable -- fwd decl: DX.Game.handleRandomEvents uses it; defined in DX.State section
+
 DX.Game = {}
 
 local stateFailCount = 0
@@ -1303,9 +1305,11 @@ function DX.Wait.forCondition(cond, timeoutSec, label, opts)
     local quiet = opts.quiet == true
     label = label or "condition"
     local startTime = os.time()
+    local lastRandomEventCheck = 0
     while not cond() do
-        if randomEvents then
+        if randomEvents and os.time() ~= lastRandomEventCheck then
             API.DoRandomEvents()
+            lastRandomEventCheck = os.time()
         end
         if os.difftime(os.time(), startTime) >= timeoutSec then
             if not quiet then
@@ -1401,7 +1405,8 @@ DX.State = {}
 
 ---Convert a sol.std::vector userdata (0- or 1-indexed) or plain table to a
 ---Lua array. Returns the input unchanged if already a table.
-local function stateToTable(x)
+---(assigned to the fwd-declared local above DX.Game)
+stateToTable = function(x)
     if type(x) == "table" then return x end
     if type(x) ~= "userdata" then return nil end
     local ok, t = pcall(DX.Util.userdataToTable, x)

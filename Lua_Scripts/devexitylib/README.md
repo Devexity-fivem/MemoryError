@@ -1,6 +1,6 @@
 # devexitylib
 
-Unified RuneScape 3 helper library for MemoryError bot scripts — everything lives under the `DX` namespace. Version 1.3.0.
+Unified RuneScape 3 helper library for MemoryError bot scripts — everything lives under the `DX` namespace. Version 1.3.1.
 
 Requires the bot-provided `api` module (`require("api")`) and client globals (`FFPOINT`, `Interact`, `Inventory`, ...). No API calls are made at load time, so it is safe to `require` at the top of any script.
 
@@ -313,7 +313,12 @@ Standalone developer utilities vendored under `tools/` — not part of the `DX` 
 
 ## Version
 
-`DX.VERSION` — currently `1.3.0`.
+`DX.VERSION` — currently `1.3.1`.
+
+### 1.3.1 — forward-reference fix
+
+- **`DX.Game.handleRandomEvents` no longer crashes** — `stateToTable` was declared as a `local function` in the DX.State section *after* the DX.Game section that uses it, so the call bound to a nil global. The local is now forward-declared above `DX.Game`.
+- **`DX.Wait.forCondition` throttles `API.DoRandomEvents()`** to once per second (was firing on every 50ms poll iteration while waiting).
 
 ### 1.3.0 — reliability audit
 
